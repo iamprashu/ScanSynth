@@ -34,7 +34,7 @@ export default function ScanForm() {
         type="text"
         value={input}
         onChange={(e) => setInput(e.target.value)}
-        placeholder="Enter domain or IP (e.g., iamprashu.in or 192.168.1.1)"
+        placeholder="Enter domain or IP (e.g., google.in or 192.168.1.1)"
         className="w-full px-4 py-3 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500"
       />
       <button
