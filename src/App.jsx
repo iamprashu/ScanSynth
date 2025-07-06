@@ -2,17 +2,20 @@ import { BrowserRouter } from "react-router-dom";
 import { ClerkWithRouter } from "./config/clerkConfig";
 import AppRoutes from "./routes/AppRoutes";
 import { Toaster } from "react-hot-toast";
-import { UIProvider, useUI } from "./contexts/uiContext";
+import { UIProvider } from "./contexts/uiContext";
+import { ApiProvider } from "./contexts/apiContext";
 
 export default function App() {
   return (
-    <UIProvider>
-      <BrowserRouter>
-        <ClerkWithRouter>
-          <AppRoutes />
-          <Toaster position="top-right" />
-        </ClerkWithRouter>
-      </BrowserRouter>
-    </UIProvider>
+    <BrowserRouter>
+      <ClerkWithRouter>
+        <UIProvider>
+          <ApiProvider>
+            <AppRoutes />
+            <Toaster position="top-right" />
+          </ApiProvider>
+        </UIProvider>
+      </ClerkWithRouter>
+    </BrowserRouter>
   );
 }
