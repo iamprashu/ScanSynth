@@ -1,0 +1,34 @@
+{
+  "name": "scansynth-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@clerk/backend": "^2.4.0",
+    "@clerk/clerk-sdk-node": "^4.13.23",
+    "@prisma/client": "^6.11.1",
+    "axios": "^1.10.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.0.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.1",
+    "helmet": "^8.1.0",
+    "joi": "^17.13.3",
+    "jose": "^6.0.11",
+    "jsonwebtoken": "^9.0.2",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.11.1"
+  }
+}

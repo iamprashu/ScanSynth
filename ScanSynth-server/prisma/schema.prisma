@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id        // Clerk user ID save rahigu isme 
+  email     String
+  name      String?
+  scans     Scan[]
+  createdAt DateTime @default(now())
+}
+
+model Scan {
+  id         String   @id @default(cuid())
+  target     String
+  resultJson Json
+  pdfUrl     String?
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  createdAt  DateTime @default(now())
+}
