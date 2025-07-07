@@ -48,7 +48,6 @@ export default function ScanResults({ results }) {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
@@ -67,7 +66,6 @@ export default function ScanResults({ results }) {
         </div>
       </div>
 
-      {/* Tabs */}
       <div className="flex space-x-1 mb-6 bg-gray-800/50 rounded-xl p-1">
         {tabs.map((tab) => (
           <motion.button
@@ -87,7 +85,6 @@ export default function ScanResults({ results }) {
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="bg-gray-800/30 rounded-xl border border-gray-700 overflow-hidden">
         {activeTab === "overview" && (
           <motion.div
@@ -154,7 +151,6 @@ export default function ScanResults({ results }) {
               </div>
             </div>
 
-            {/* Summary */}
             <div className="mt-6 p-4 bg-gray-700/30 rounded-xl border border-gray-600">
               <h3 className="text-lg font-semibold text-white mb-3">
                 Scan Summary
@@ -412,7 +408,6 @@ export default function ScanResults({ results }) {
         )}
       </div>
 
-      {/* AI Report Modal */}
       {showAIReport && (
         <AIReport scanData={results} onClose={() => setShowAIReport(false)} />
       )}

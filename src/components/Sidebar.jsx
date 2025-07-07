@@ -1,10 +1,13 @@
-import { SignOutButton } from "@clerk/clerk-react";
+import { SignOutButton, useClerk } from "@clerk/clerk-react";
 import { useUI } from "../contexts/uiContext";
+import { useLoading } from "../hooks/useLoading";
 import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 
 export default function Sidebar() {
   const { isSidebarOpen, closeSidebar } = useUI();
+  const { executeWithGlobalLoading } = useLoading();
+  const { signOut } = useClerk();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -21,11 +24,24 @@ export default function Sidebar() {
       icon: "📊",
       description: "View past scan reports",
     },
+    {
+      label: "Loading Test",
+      path: "/test",
+      icon: "🧪",
+      description: "Test loading system functionality",
+    },
   ];
+
+  const handleSignOut = async () => {
+    try {
+      await executeWithGlobalLoading(() => signOut(), "Signing out...");
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <>
-      {/* Mobile overlay */}
       {isSidebarOpen && (
         <motion.div
           className="md:hidden fixed inset-0 bg-black/50 z-30"
@@ -44,7 +60,6 @@ export default function Sidebar() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.3 }}
       >
-        {/* Header */}
         <div className="p-6 border-b border-gray-700">
           <div className="flex items-center gap-3">
             <motion.div
@@ -63,7 +78,6 @@ export default function Sidebar() {
           </div>
         </div>
 
-        {/* Navigation */}
         <nav className="flex flex-col p-4 space-y-2">
           {navItems.map((item, index) => {
             const isActive = location.pathname === item.path;
@@ -101,7 +115,6 @@ export default function Sidebar() {
                   )}
                 </div>
 
-                {/* Active indicator line */}
                 {isActive && (
                   <motion.div
                     className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-cyan-400 to-purple-500 rounded-r"
@@ -113,32 +126,30 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {/* Footer */}
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-          <motion.div
-            className="bg-gradient-to-r from-red-600/20 to-red-800/20 border border-red-500/50 rounded-xl p-3 text-center hover:bg-red-600/30 transition-colors cursor-pointer"
+          <motion.button
+            onClick={handleSignOut}
+            className="w-full bg-gradient-to-r from-red-600/20 to-red-800/20 border border-red-500/50 rounded-xl p-3 text-center hover:bg-red-600/30 transition-colors cursor-pointer"
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <SignOutButton>
-              <div className="flex items-center justify-center gap-2 text-red-300 hover:text-red-200">
-                <svg
-                  className="w-4 h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                <span className="font-medium">Sign Out</span>
-              </div>
-            </SignOutButton>
-          </motion.div>
+            <div className="flex items-center justify-center gap-2 text-red-300 hover:text-red-200">
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
+                />
+              </svg>
+              <span className="font-medium">Sign Out</span>
+            </div>
+          </motion.button>
         </div>
       </motion.aside>
     </>
