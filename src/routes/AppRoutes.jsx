@@ -3,12 +3,12 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Hero from "../components/Hero";
 import Dashboard from "../pages/Dashboard";
 import ScanHistory from "../components/ScanHistory";
+import LoadingTest from "../components/LoadingTest";
 import { useUI } from "../contexts/uiContext";
 import GlobalLoader from "../components/GlobalLoader";
 import Sidebar from "../components/Sidebar";
 import Topbar from "../components/Topbar";
 
-// Layout component for authenticated pages
 function AuthenticatedLayout({ children }) {
   return (
     <div className="min-h-screen bg-gradient-to-b from-black to-gray-900 md:flex">
@@ -20,11 +20,11 @@ function AuthenticatedLayout({ children }) {
 }
 
 export default function AppRoutes() {
-  const { isLoading, loadingMessage } = useUI();
+  const { globalLoading, globalLoadingMessage } = useUI();
 
   return (
     <>
-      {isLoading && <GlobalLoader message={loadingMessage} />}
+      {globalLoading && <GlobalLoader message={globalLoadingMessage} />}
 
       <Routes>
         <Route path="/" element={<Hero />} />
@@ -50,6 +50,22 @@ export default function AppRoutes() {
               <SignedIn>
                 <AuthenticatedLayout>
                   <ScanHistory />
+                </AuthenticatedLayout>
+              </SignedIn>
+              <SignedOut>
+                <RedirectToSignIn />
+              </SignedOut>
+            </>
+          }
+        />
+
+        <Route
+          path="/test"
+          element={
+            <>
+              <SignedIn>
+                <AuthenticatedLayout>
+                  <LoadingTest />
                 </AuthenticatedLayout>
               </SignedIn>
               <SignedOut>
