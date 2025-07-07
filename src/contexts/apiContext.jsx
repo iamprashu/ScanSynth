@@ -1,4 +1,4 @@
-import { createContext, useCallback, useMemo } from "react";
+import { createContext, useCallback, useMemo, useRef } from "react";
 import { useAuth } from "@clerk/clerk-react";
 import { useUI } from "./uiContext";
 
@@ -6,7 +6,9 @@ const ApiContext = createContext();
 
 function ApiProvider({ children }) {
   const { getToken } = useAuth();
-  const { startLoading, stopLoading, withloading } = useUI();
+  const { withLoading } = useUI();
+
+  const userCreationAttempted = useRef(false);
 
   const apiCall = useCallback(
     async (endpoint, options = {}) => {
@@ -35,11 +37,22 @@ function ApiProvider({ children }) {
 
   const createUser = useCallback(
     async (userData) => {
+      if (userCreationAttempted.current) {
+        return { success: true, message: "User already exists" };
+      }
+
+      userCreationAttempted.current = true;
+
       try {
-        return await apiCall("/user/create", {
-          method: "POST",
-          body: JSON.stringify(userData),
-        });
+        return await withLoading(
+          () =>
+            apiCall("/user/create", {
+              method: "POST",
+              body: JSON.stringify(userData),
+            }),
+          "user-creation",
+          "Setting up your account..."
+        );
       } catch (error) {
         if (
           error.message.includes("already exists") ||
@@ -50,55 +63,81 @@ function ApiProvider({ children }) {
         throw error;
       }
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getUserProfile = useCallback(async () => {
-    return apiCall("/user/profile");
-  }, [apiCall]);
+    return withLoading(
+      () => apiCall("/user/profile"),
+      "user-profile",
+      "Loading profile..."
+    );
+  }, [apiCall, withLoading]);
 
   const updateUser = useCallback(
     async (userData) => {
-      return apiCall("/user/update", {
-        method: "PUT",
-        body: JSON.stringify(userData),
-      });
+      return withLoading(
+        () =>
+          apiCall("/user/update", {
+            method: "PUT",
+            body: JSON.stringify(userData),
+          }),
+        "user-update",
+        "Updating profile..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
-  // Scan Management APIs
   const startScan = useCallback(
     async (target, scanType = "quick") => {
-      return apiCall("/scan/start", {
-        method: "POST",
-        body: JSON.stringify({ target, scanType }),
-      });
+      return withLoading(
+        () =>
+          apiCall("/scan/start", {
+            method: "POST",
+            body: JSON.stringify({ target, scanType }),
+          }),
+        "scan-start",
+        `Starting ${scanType} scan...`
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getScanStatus = useCallback(
     async (scanId) => {
-      return apiCall(`/scan/status/${scanId}`);
+      return withLoading(
+        () => apiCall(`/scan/status/${scanId}`),
+        `scan-status-${scanId}`,
+        "Checking scan status..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getScanResults = useCallback(
     async (scanId) => {
-      return apiCall(`/scan/results/${scanId}`);
+      return withLoading(
+        () => apiCall(`/scan/results/${scanId}`),
+        `scan-results-${scanId}`,
+        "Loading scan results..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const generateAIReport = useCallback(
     async (scanId) => {
-      return apiCall(`/scan/ai-report/${scanId}`, {
-        method: "POST",
-      });
+      return withLoading(
+        () =>
+          apiCall(`/scan/${scanId}/report`, {
+            method: "POST",
+          }),
+        `ai-report-${scanId}`,
+        "Generating AI report..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getScanHistory = useCallback(
@@ -107,49 +146,114 @@ function ApiProvider({ children }) {
         page: params.page || 1,
         limit: params.limit || 10,
         ...(params.target && { target: params.target }),
-        ...(params.status && { status: params.status }),
+        ...(params.scanType && { scanType: params.scanType }),
+        ...(params.startDate && { startDate: params.startDate }),
+        ...(params.endDate && { endDate: params.endDate }),
       });
 
-      return apiCall(`/history?${queryParams}`);
+      return withLoading(
+        () => apiCall(`/history?${queryParams}`),
+        "scan-history",
+        "Loading scan history..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getScanById = useCallback(
     async (scanId) => {
-      return apiCall(`/history/${scanId}`);
+      return withLoading(
+        () => apiCall(`/history/${scanId}`),
+        `scan-details-${scanId}`,
+        "Loading scan details..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const deleteScan = useCallback(
     async (scanId) => {
-      return apiCall(`/history/${scanId}`, {
-        method: "DELETE",
-      });
+      return withLoading(
+        () =>
+          apiCall(`/history/${scanId}`, {
+            method: "DELETE",
+          }),
+        `delete-scan-${scanId}`,
+        "Deleting scan..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
   const getScanStats = useCallback(async () => {
-    return apiCall("/history/stats");
-  }, [apiCall]);
+    return withLoading(
+      () => apiCall("/history/stats"),
+      "scan-stats",
+      "Loading statistics..."
+    );
+  }, [apiCall, withLoading]);
 
-  const exportScanPDF = useCallback(
+  const regeneratePDF = useCallback(
     async (scanId) => {
-      return apiCall(`/history/${scanId}/export`, {
-        method: "POST",
-      });
+      return withLoading(
+        () =>
+          apiCall(`/reports/regenerate/${scanId}`, {
+            method: "POST",
+          }),
+        `regenerate-pdf-${scanId}`,
+        "Regenerating PDF report..."
+      );
     },
-    [apiCall]
+    [apiCall, withLoading]
   );
 
-  // Health Check API
-  const checkHealth = useCallback(async () => {
-    return apiCall("/health");
-  }, [apiCall]);
+  const downloadPDF = useCallback(
+    async (filename) => {
+      const token = await getToken();
+      const baseUrl = "http://192.168.0.101:3000/api";
 
-  // Memoize API objects to prevent infinite re-renders
+      const link = document.createElement("a");
+      link.href = `${baseUrl}/reports/${filename}`;
+      link.target = "_blank";
+
+      try {
+        const actualUrl = `${baseUrl}/reports/${filename}`;
+        console.log("PDF Download URL:", actualUrl);
+
+        const response = await fetch(actualUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (response.ok) {
+          const blob = await response.blob();
+          const blobUrl = window.URL.createObjectURL(blob);
+          console.log("Created Blob URL:", blobUrl);
+          link.href = blobUrl;
+          link.click();
+          window.URL.revokeObjectURL(blobUrl);
+        } else {
+          throw new Error("Failed to download PDF");
+        }
+      } catch (error) {
+        console.error("PDF download error:", error);
+        window.open(`${baseUrl}/reports/${filename}`, "_blank");
+      }
+
+      return { success: true, message: "PDF opened in new tab" };
+    },
+    [getToken]
+  );
+
+  const checkHealth = useCallback(async () => {
+    return withLoading(
+      () => apiCall("/health"),
+      "health-check",
+      "Checking server status..."
+    );
+  }, [apiCall, withLoading]);
+
   const userAPI = useMemo(
     () => ({
       createUser,
@@ -175,9 +279,17 @@ function ApiProvider({ children }) {
       getScanById,
       deleteScan,
       getScanStats,
-      exportScanPDF,
+      regeneratePDF,
+      downloadPDF,
     }),
-    [getScanHistory, getScanById, deleteScan, getScanStats, exportScanPDF]
+    [
+      getScanHistory,
+      getScanById,
+      deleteScan,
+      getScanStats,
+      regeneratePDF,
+      downloadPDF,
+    ]
   );
 
   const healthAPI = useMemo(

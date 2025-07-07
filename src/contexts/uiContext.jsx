@@ -4,31 +4,81 @@ const UIContext = createContext(undefined);
 
 function UIProvider({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState("Loading...");
 
-  const startLoading = useCallback((message = "Loading...") => {
-    setLoadingMessage(message);
-    setIsLoading(true);
+  const [loadingStates, setLoadingStates] = useState({});
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [globalLoadingMessage, setGlobalLoadingMessage] =
+    useState("Loading...");
+
+  const startLoading = useCallback((key, message = "Loading...") => {
+    setLoadingStates((prev) => ({
+      ...prev,
+      [key]: { isLoading: true, message },
+    }));
   }, []);
 
-  const stopLoading = useCallback(() => {
-    setIsLoading(false);
-    setLoadingMessage("Loading...");
+  const stopLoading = useCallback((key) => {
+    setLoadingStates((prev) => ({
+      ...prev,
+      [key]: { isLoading: false, message: "" },
+    }));
+  }, []);
+
+  const isLoading = useCallback(
+    (key) => {
+      return loadingStates[key]?.isLoading || false;
+    },
+    [loadingStates]
+  );
+
+  const getLoadingMessage = useCallback(
+    (key) => {
+      return loadingStates[key]?.message || "Loading...";
+    },
+    [loadingStates]
+  );
+
+  const startGlobalLoading = useCallback((message = "Loading...") => {
+    setGlobalLoadingMessage(message);
+    setGlobalLoading(true);
+  }, []);
+
+  const stopGlobalLoading = useCallback(() => {
+    setGlobalLoading(false);
+    setGlobalLoadingMessage("Loading...");
   }, []);
 
   const withLoading = useCallback(
-    async (asyncFn, message = "Loading...") => {
+    async (asyncFn, key, message = "Loading...") => {
       try {
-        startLoading(message);
+        startLoading(key, message);
         const result = await asyncFn();
         return result;
       } finally {
-        stopLoading();
+        stopLoading(key);
       }
     },
     [startLoading, stopLoading]
   );
+
+  const withGlobalLoading = useCallback(
+    async (asyncFn, message = "Loading...") => {
+      try {
+        startGlobalLoading(message);
+        const result = await asyncFn();
+        return result;
+      } finally {
+        stopGlobalLoading();
+      }
+    },
+    [startGlobalLoading, stopGlobalLoading]
+  );
+
+  const clearAllLoading = useCallback(() => {
+    setLoadingStates({});
+    setGlobalLoading(false);
+    setGlobalLoadingMessage("Loading...");
+  }, []);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
   const closeSidebar = () => setIsSidebarOpen(false);
@@ -37,11 +87,19 @@ function UIProvider({ children }) {
     isSidebarOpen,
     toggleSidebar,
     closeSidebar,
+
+    loadingStates,
+    globalLoading,
+    globalLoadingMessage,
     startLoading,
     stopLoading,
-    withLoading,
     isLoading,
-    loadingMessage,
+    getLoadingMessage,
+    startGlobalLoading,
+    stopGlobalLoading,
+    withLoading,
+    withGlobalLoading,
+    clearAllLoading,
   };
 
   return <UIContext.Provider value={values}>{children}</UIContext.Provider>;
