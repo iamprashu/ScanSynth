@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { useScan } from "../contexts/scanContext";
+import { useAPI } from "../hooks/useAPI";
+import { useLoading } from "../hooks/useLoading";
 import { showError } from "../utils/toastHelpers";
-import { useUI } from "../contexts/uiContext";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 export default function ScanForm() {
-  const { updateTarget, startScan, isLoading } = useScan();
+  const { scanAPI } = useAPI();
+  const { isLoading, getLoadingMessage } = useLoading();
   const [input, setInput] = useState("");
   const [scanType, setScanType] = useState("quick");
-  const { withLoading } = useUI();
 
   const scanTypes = [
     {
@@ -44,17 +45,33 @@ export default function ScanForm() {
       return;
     }
 
-    updateTarget(input);
-    setInput("");
-
     try {
-      await withLoading(async () => {
-        await startScan(input, scanType);
-      }, `Performing ${scanType} scan...`);
+      const res = await scanAPI.startScan(input, scanType);
+      console.log("Scan result:", res);
+
+      if (res.scanId) {
+        toast.success(
+          `Scan completed! Found ${res.summary?.openPorts || 0} open ports.`
+        );
+
+        if (res.openServices && res.openServices.length > 0) {
+          const servicesList = res.openServices
+            .map((service) => `${service.port}: ${service.service}`)
+            .join(", ");
+          toast.success(`Services found: ${servicesList}`, { duration: 5000 });
+        }
+
+        setInput("");
+      } else {
+        toast.error(res.message || "Failed to start scan");
+      }
     } catch (error) {
       console.error("Scan error:", error);
+      showError("Failed to start scan. Please try again.");
     }
   };
+
+  const isScanLoading = isLoading("scan-start");
 
   return (
     <motion.div
@@ -63,7 +80,6 @@ export default function ScanForm() {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      {/* Scan Type Selection */}
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-white mb-4">
           Select Scan Type
@@ -73,13 +89,14 @@ export default function ScanForm() {
             <motion.button
               key={type.id}
               onClick={() => setScanType(type.id)}
+              disabled={isScanLoading}
               className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                 scanType === type.id
                   ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
                   : "border-gray-700 bg-gray-800/50 text-gray-300 hover:border-gray-600 hover:bg-gray-700/50"
-              }`}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              } ${isScanLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+              whileHover={isScanLoading ? {} : { scale: 1.02 }}
+              whileTap={isScanLoading ? {} : { scale: 0.98 }}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{type.icon}</span>
@@ -101,7 +118,26 @@ export default function ScanForm() {
         </div>
       </div>
 
-      {/* Target Input Form */}
+      {isScanLoading && (
+        <motion.div
+          className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl"
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <p className="text-cyan-400 font-medium">
+                {getLoadingMessage("scan-start")}
+              </p>
+              <p className="text-cyan-300/70 text-sm">
+                Please wait while we initialize your scan...
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       <motion.form
         onSubmit={handleSubmit}
         className="space-y-6"
@@ -122,7 +158,10 @@ export default function ScanForm() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Enter domain or IP (e.g., google.com or 192.168.1.1)"
-              className="w-full pl-8 pr-4 py-4 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono transition-all duration-200"
+              disabled={isScanLoading}
+              className={`w-full pl-8 pr-4 py-4 rounded-xl bg-gray-800/50 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent font-mono transition-all duration-200 ${
+                isScanLoading ? "opacity-50 cursor-not-allowed" : ""
+              }`}
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
               <motion.div
@@ -137,7 +176,6 @@ export default function ScanForm() {
           </p>
         </div>
 
-        {/* Scan Options */}
         <div className="bg-gray-800/30 rounded-xl p-4 border border-gray-700">
           <h4 className="text-sm font-medium text-gray-300 mb-3">
             Scan Options
@@ -162,28 +200,23 @@ export default function ScanForm() {
           </div>
         </div>
 
-        {/* Submit Button */}
         <motion.button
           type="submit"
-          disabled={isLoading || !input.trim()}
+          disabled={!input.trim() || isScanLoading}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center gap-3 ${
-            isLoading || !input.trim()
+            !input.trim() || isScanLoading
               ? "bg-gray-700 text-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 shadow-lg hover:shadow-cyan-500/25"
           }`}
-          whileHover={!isLoading && input.trim() ? { scale: 1.02 } : {}}
-          whileTap={!isLoading && input.trim() ? { scale: 0.98 } : {}}
+          whileHover={!input.trim() || isScanLoading ? {} : { scale: 1.02 }}
+          whileTap={!input.trim() || isScanLoading ? {} : { scale: 0.98 }}
         >
-          {isLoading ? (
+          {isScanLoading ? (
             <>
-              <motion.div
-                className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              />
-              <span>Scanning in progress...</span>
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Starting Scan...</span>
             </>
-          ) : (
+          ) : input.trim() ? (
             <>
               <span className="text-xl">🔍</span>
               <span>
@@ -196,11 +229,12 @@ export default function ScanForm() {
                 Scan
               </span>
             </>
+          ) : (
+            <span>Start Scan</span>
           )}
         </motion.button>
       </motion.form>
 
-      {/* Security Notice */}
       <motion.div
         className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-xl"
         initial={{ opacity: 0 }}
@@ -208,10 +242,12 @@ export default function ScanForm() {
         transition={{ delay: 0.4 }}
       >
         <div className="flex items-start gap-3">
-          <span className="text-yellow-400 text-lg">⚠️</span>
-          <div className="text-sm text-yellow-200">
-            <p className="font-medium mb-1">Ethical Use Only</p>
-            <p className="text-yellow-300/80">
+          <span className="text-yellow-400 text-xl">⚠️</span>
+          <div>
+            <h4 className="text-yellow-400 font-semibold mb-1">
+              Ethical Hacking Notice
+            </h4>
+            <p className="text-yellow-300/80 text-sm">
               Only scan systems you own or have explicit permission to test.
               Unauthorized scanning may be illegal in your jurisdiction.
             </p>

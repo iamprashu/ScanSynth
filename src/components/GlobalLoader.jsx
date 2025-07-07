@@ -14,7 +14,7 @@ const GlobalLoader = ({ message = "Loading..." }) => {
     },
     animate: {
       y: ["0%", "-100%", "0%"],
-      backgroundColor: ["#06b6d4", "#8b5cf6", "#06b6d4"], // Cyan to purple gradient
+      backgroundColor: ["#06b6d4", "#8b5cf6", "#06b6d4"],
     },
   };
 

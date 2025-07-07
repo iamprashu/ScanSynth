@@ -19,7 +19,6 @@ export default function Hero() {
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-black text-white flex flex-col items-center justify-center px-4 text-center">
-      {/* Animated Background Grid */}
       <div className="absolute inset-0 z-0 pointer-events-none">
         <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
           <defs>
@@ -61,7 +60,6 @@ export default function Hero() {
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/60 to-black" />
       </div>
 
-      {/* Floating Particles */}
       <div className="absolute inset-0 z-5 pointer-events-none">
         {[...Array(20)].map((_, i) => (
           <motion.div
@@ -85,9 +83,7 @@ export default function Hero() {
         ))}
       </div>
 
-      {/* Main Content */}
       <motion.div className="relative z-10" style={{ y, opacity }}>
-        {/* Glitch Effect Title */}
         <div className="relative">
           <motion.h1
             className="text-6xl md:text-8xl font-black bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-500 to-cyan-600"
@@ -107,7 +103,6 @@ export default function Hero() {
             ScanSynth
           </motion.h1>
 
-          {/* Glitch overlay effect */}
           <motion.h1
             className="absolute inset-0 text-6xl md:text-8xl font-black text-cyan-400 opacity-0"
             initial={{ opacity: 0 }}
@@ -126,7 +121,6 @@ export default function Hero() {
           </motion.h1>
         </div>
 
-        {/* Subtitle with typing effect */}
         <motion.div
           className="mt-8"
           initial={{ opacity: 0 }}
@@ -168,7 +162,6 @@ export default function Hero() {
           </motion.p>
         </motion.div>
 
-        {/* Feature Pills */}
         <motion.div
           className="mt-8 flex flex-wrap justify-center gap-4"
           initial={{ opacity: 0, y: 30 }}
@@ -204,7 +197,6 @@ export default function Hero() {
           ))}
         </motion.div>
 
-        {/* CTA Button */}
         <motion.div
           className="mt-12"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -236,7 +228,6 @@ export default function Hero() {
                 </motion.span>
               </span>
 
-              {/* Button glow effect */}
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-purple-400 opacity-0"
                 whileHover={{ opacity: 0.3 }}
@@ -246,7 +237,6 @@ export default function Hero() {
           </Link>
         </motion.div>
 
-        {/* Matrix Rain Effect */}
         <div className="absolute inset-0 z-1 pointer-events-none opacity-20">
           {[...Array(50)].map((_, i) => (
             <motion.div

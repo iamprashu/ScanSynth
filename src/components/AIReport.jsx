@@ -8,7 +8,6 @@ export default function AIReport({ scanData, onClose }) {
   const generateReport = async () => {
     setGenerating(true);
 
-    // Simulate AI report generation
     setTimeout(() => {
       const aiReport = {
         summary: `AI analysis of ${scanData.target} reveals ${
@@ -69,7 +68,6 @@ export default function AIReport({ scanData, onClose }) {
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
       >
-        {/* Header */}
         <div className="p-6 border-b border-gray-700 flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">
@@ -99,7 +97,6 @@ export default function AIReport({ scanData, onClose }) {
           </motion.button>
         </div>
 
-        {/* Content */}
         <div className="p-6">
           {!report && !generating && (
             <div className="text-center py-8">
@@ -147,7 +144,6 @@ export default function AIReport({ scanData, onClose }) {
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5 }}
             >
-              {/* Executive Summary */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold text-white mb-4">
                   Executive Summary
@@ -158,8 +154,6 @@ export default function AIReport({ scanData, onClose }) {
                   </p>
                 </div>
               </div>
-
-              {/* Risk Assessment */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold text-white mb-4">
                   Risk Assessment
@@ -197,8 +191,6 @@ export default function AIReport({ scanData, onClose }) {
                   </div>
                 </div>
               </div>
-
-              {/* Recommendations */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold text-white mb-4">
                   Security Recommendations
@@ -222,8 +214,6 @@ export default function AIReport({ scanData, onClose }) {
                   ))}
                 </div>
               </div>
-
-              {/* Detailed Analysis */}
               {report.detailedAnalysis.length > 0 && (
                 <div className="mb-8">
                   <h3 className="text-xl font-semibold text-white mb-4">
@@ -287,8 +277,6 @@ export default function AIReport({ scanData, onClose }) {
                   </div>
                 </div>
               )}
-
-              {/* Compliance */}
               <div className="mb-8">
                 <h3 className="text-xl font-semibold text-white mb-4">
                   Compliance Status
@@ -319,8 +307,6 @@ export default function AIReport({ scanData, onClose }) {
                   )}
                 </div>
               </div>
-
-              {/* Actions */}
               <div className="flex gap-4">
                 <motion.button
                   className="px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl font-semibold transition-colors"
