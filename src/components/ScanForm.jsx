@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useAPI } from "../hooks/useAPI";
 import { useLoading } from "../hooks/useLoading";
 import { showError } from "../utils/toastHelpers";
-import { motion } from "framer-motion";
 import toast from "react-hot-toast";
 
 export default function ScanForm() {
@@ -10,6 +9,8 @@ export default function ScanForm() {
   const { isLoading, getLoadingMessage } = useLoading();
   const [input, setInput] = useState("");
   const [scanType, setScanType] = useState("quick");
+  const [showDeepScanWarning, setShowDeepScanWarning] = useState(false);
+  const [pendingScanType, setPendingScanType] = useState(null);
 
   const scanTypes = [
     {
@@ -73,30 +74,43 @@ export default function ScanForm() {
 
   const isScanLoading = isLoading("scan-start");
 
+  const handleScanTypeClick = (typeId) => {
+    if (typeId === "full" || typeId === "stealth") {
+      setPendingScanType(typeId);
+      setShowDeepScanWarning(true);
+    } else {
+      setScanType(typeId);
+    }
+  };
+
+  const confirmDeepScan = () => {
+    setScanType(pendingScanType);
+    setShowDeepScanWarning(false);
+    setPendingScanType(null);
+  };
+
+  const cancelDeepScan = () => {
+    setShowDeepScanWarning(false);
+    setPendingScanType(null);
+  };
+
   return (
-    <motion.div
-      className="w-full max-w-4xl mx-auto"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
+    <div className="w-full max-w-4xl mx-auto">
       <div className="mb-8">
         <h3 className="text-lg font-semibold text-white mb-4">
           Select Scan Type
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {scanTypes.map((type) => (
-            <motion.button
+            <button
               key={type.id}
-              onClick={() => setScanType(type.id)}
+              onClick={() => handleScanTypeClick(type.id)}
               disabled={isScanLoading}
               className={`relative p-4 rounded-xl border-2 transition-all duration-200 ${
                 scanType === type.id
                   ? "border-cyan-500 bg-cyan-500/10 text-cyan-300"
                   : "border-gray-700 bg-gray-800/50 text-gray-300 hover:border-gray-600 hover:bg-gray-700/50"
               } ${isScanLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-              whileHover={isScanLoading ? {} : { scale: 1.02 }}
-              whileTap={isScanLoading ? {} : { scale: 0.98 }}
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl">{type.icon}</span>
@@ -108,22 +122,50 @@ export default function ScanForm() {
                 </div>
               </div>
               {scanType === type.id && (
-                <motion.div
-                  className="absolute top-2 right-2 w-3 h-3 bg-cyan-400 rounded-full"
-                  layoutId="scanTypeIndicator"
-                />
+                <div className="absolute top-2 right-2 w-3 h-3 bg-cyan-400 rounded-full" />
               )}
-            </motion.button>
+            </button>
           ))}
         </div>
       </div>
 
+      {showDeepScanWarning && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70">
+          <div className="bg-gray-900 p-8 rounded-xl shadow-lg max-w-md w-full text-center border border-cyan-500">
+            <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+              Deep Scan Warning
+            </h2>
+            <p className="text-gray-200 mb-6">
+              You have selected a{" "}
+              <span className="font-semibold">
+                {pendingScanType === "full" ? "Full Scan" : "Stealth Scan"}
+              </span>
+              .<br />
+              This is a very deep scan and may take a lot of time to complete.
+              <br />
+              Please be patient, you will surely get your report once it
+              finishes.
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={confirmDeepScan}
+                className="px-6 py-2 bg-cyan-600 text-white rounded hover:bg-cyan-700 font-semibold"
+              >
+                Proceed
+              </button>
+              <button
+                onClick={cancelDeepScan}
+                className="px-6 py-2 bg-gray-700 text-gray-300 rounded hover:bg-gray-600 font-semibold"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {isScanLoading && (
-        <motion.div
-          className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl"
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
+        <div className="mb-6 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl">
           <div className="flex items-center gap-3">
             <div className="w-5 h-5 border-2 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
             <div>
@@ -135,16 +177,10 @@ export default function ScanForm() {
               </p>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
 
-      <motion.form
-        onSubmit={handleSubmit}
-        className="space-y-6"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
-      >
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-gray-300 mb-2">
             Target Host
@@ -164,11 +200,7 @@ export default function ScanForm() {
               }`}
             />
             <div className="absolute inset-y-0 right-0 pr-4 flex items-center">
-              <motion.div
-                className="w-2 h-2 bg-cyan-400 rounded-full"
-                animate={{ opacity: [1, 0.3, 1] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-              />
+              <div className="w-2 h-2 bg-cyan-400 rounded-full" />
             </div>
           </div>
           <p className="mt-2 text-xs text-gray-400">
@@ -200,7 +232,7 @@ export default function ScanForm() {
           </div>
         </div>
 
-        <motion.button
+        <button
           type="submit"
           disabled={!input.trim() || isScanLoading}
           className={`w-full py-4 px-6 rounded-xl font-semibold text-white transition-all duration-200 flex items-center justify-center gap-3 ${
@@ -208,8 +240,6 @@ export default function ScanForm() {
               ? "bg-gray-700 text-gray-400 cursor-not-allowed"
               : "bg-gradient-to-r from-cyan-600 to-purple-600 hover:from-cyan-700 hover:to-purple-700 shadow-lg hover:shadow-cyan-500/25"
           }`}
-          whileHover={!input.trim() || isScanLoading ? {} : { scale: 1.02 }}
-          whileTap={!input.trim() || isScanLoading ? {} : { scale: 0.98 }}
         >
           {isScanLoading ? (
             <>
@@ -232,15 +262,10 @@ export default function ScanForm() {
           ) : (
             <span>Start Scan</span>
           )}
-        </motion.button>
-      </motion.form>
+        </button>
+      </form>
 
-      <motion.div
-        className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-xl"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
+      <div className="mt-6 p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-xl">
         <div className="flex items-start gap-3">
           <span className="text-yellow-400 text-xl">⚠️</span>
           <div>
@@ -253,7 +278,7 @@ export default function ScanForm() {
             </p>
           </div>
         </div>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
