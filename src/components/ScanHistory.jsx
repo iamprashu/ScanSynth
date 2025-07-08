@@ -203,7 +203,7 @@ export default function ScanHistory() {
           </div>
 
           <div className="flex-1 overflow-hidden px-6">
-            <div className="h-full overflow-y-auto scrollbar-hide">
+            <div className="h-full overflow-y-auto scrollbar-hide p-2">
               <div className="space-y-4 pb-4">
                 {isHistoryLoading ? (
                   <motion.div
@@ -260,6 +260,9 @@ export default function ScanHistory() {
                               <h3 className="text-lg font-semibold text-white">
                                 {scan.target}
                               </h3>
+                              <h3 className="text-sm bg-black px-2  w-fit text-green-300">
+                                Scan Type: {scan.scanType}
+                              </h3>
                               <p className="text-sm text-gray-400">
                                 {new Date(scan.createdAt).toLocaleDateString()}{" "}
                                 at{" "}
@@ -268,7 +271,8 @@ export default function ScanHistory() {
                             </div>
                           </div>
                           <div className="flex items-center gap-3">
-                            {scan.pdfUrl && (
+                            {/* //agar quick scan h to ai ko cll nahi jana chahiye qki scan result sahi nahi ayega model trin nahi jh */}
+                            {scan.pdfUrl && scan.scanType != "quick" && (
                               <motion.button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -285,31 +289,33 @@ export default function ScanHistory() {
                                 📄
                               </motion.button>
                             )}
-                            <motion.button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRegeneratePDF(scan.id);
-                              }}
-                              disabled={isRegenerating(scan.id)}
-                              className={`p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors ${
-                                isRegenerating(scan.id)
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              whileHover={
-                                isRegenerating(scan.id) ? {} : { scale: 1.05 }
-                              }
-                              whileTap={
-                                isRegenerating(scan.id) ? {} : { scale: 0.95 }
-                              }
-                              title="Regenerate PDF Report"
-                            >
-                              {isRegenerating(scan.id) ? (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                "🔄"
-                              )}
-                            </motion.button>
+                            {scan.scanType != "quick" && (
+                              <motion.button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRegeneratePDF(scan.id);
+                                }}
+                                disabled={isRegenerating(scan.id)}
+                                className={`p-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors ${
+                                  isRegenerating(scan.id)
+                                    ? "opacity-50 cursor-not-allowed"
+                                    : ""
+                                }`}
+                                whileHover={
+                                  isRegenerating(scan.id) ? {} : { scale: 1.05 }
+                                }
+                                whileTap={
+                                  isRegenerating(scan.id) ? {} : { scale: 0.95 }
+                                }
+                                title="Regenerate PDF Report"
+                              >
+                                {isRegenerating(scan.id) ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  "🔄"
+                                )}
+                              </motion.button>
+                            )}
 
                             <motion.button
                               onClick={(e) => {
@@ -371,23 +377,30 @@ export default function ScanHistory() {
                                 Created:{" "}
                                 {new Date(scan.createdAt).toLocaleString()}
                               </p>
-                              {scan.status === "completed" &&
-                                scan.resultJson && (
-                                  <div className="mt-3">
-                                    <p className="text-gray-300 font-medium mb-2">
-                                      Results Summary:
-                                    </p>
-                                    <div className="bg-gray-800/50 p-3 rounded border border-gray-600">
-                                      <pre className="text-xs text-gray-300 overflow-x-auto">
-                                        {JSON.stringify(
-                                          JSON.parse(scan.resultJson),
-                                          null,
-                                          2
-                                        )}
-                                      </pre>
-                                    </div>
-                                  </div>
-                                )}
+                              {scan.scanType == "quick" && (
+                                <table className="w-full">
+                                  <thead className="bg-gray-700/30">
+                                    <tr className="text-left">
+                                      <th>Port</th>
+                                      <th>State</th>
+                                      <th>Service</th>
+                                      <th>Version</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="text-left">
+                                    {scan.parsedData.ports?.map((eachPort) => {
+                                      return (
+                                        <tr>
+                                          <td>{eachPort.port}</td>
+                                          <td>{eachPort.state}</td>
+                                          <td>{eachPort.service}</td>
+                                          <td>{eachPort.version}</td>
+                                        </tr>
+                                      );
+                                    })}
+                                  </tbody>
+                                </table>
+                              )}
                             </div>
                           </motion.div>
                         )}
