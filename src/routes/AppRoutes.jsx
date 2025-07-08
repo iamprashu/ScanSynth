@@ -3,7 +3,6 @@ import { SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import Hero from "../components/Hero";
 import Dashboard from "../pages/Dashboard";
 import ScanHistory from "../components/ScanHistory";
-import LoadingTest from "../components/LoadingTest";
 import { useUI } from "../contexts/uiContext";
 import GlobalLoader from "../components/GlobalLoader";
 import Sidebar from "../components/Sidebar";
@@ -50,22 +49,6 @@ export default function AppRoutes() {
               <SignedIn>
                 <AuthenticatedLayout>
                   <ScanHistory />
-                </AuthenticatedLayout>
-              </SignedIn>
-              <SignedOut>
-                <RedirectToSignIn />
-              </SignedOut>
-            </>
-          }
-        />
-
-        <Route
-          path="/test"
-          element={
-            <>
-              <SignedIn>
-                <AuthenticatedLayout>
-                  <LoadingTest />
                 </AuthenticatedLayout>
               </SignedIn>
               <SignedOut>
