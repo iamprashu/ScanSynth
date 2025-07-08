@@ -191,6 +191,4 @@ The application uses a unified API context system for all backend communication:
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 📞 Support
 
-For support and questions, please refer to the PROJECT_REPORT.txt file for detailed documentation of all changes and implementations.
