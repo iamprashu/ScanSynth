@@ -7,13 +7,14 @@ const ApiContext = createContext();
 function ApiProvider({ children }) {
   const { getToken } = useAuth();
   const { withLoading } = useUI();
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
   const userCreationAttempted = useRef(false);
 
   const apiCall = useCallback(
     async (endpoint, options = {}) => {
       const token = await getToken();
-      const baseUrl = "http://192.168.0.101:3000/api";
+      const baseUrl = backendUrl;
 
       const response = await fetch(`${baseUrl}${endpoint}`, {
         headers: {
@@ -210,7 +211,7 @@ function ApiProvider({ children }) {
   const downloadPDF = useCallback(
     async (filename) => {
       const token = await getToken();
-      const baseUrl = "http://192.168.0.101:3000/api";
+      const baseUrl = backendUrl;
 
       const link = document.createElement("a");
       link.href = `${baseUrl}/reports/${filename}`;
