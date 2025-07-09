@@ -64,8 +64,9 @@ ScanSynth/
    ```
 3. Create `.env` file:
    ```env
-   VITE_CLERK_PUBLISHABLE_KEY=your_clerk_key
-   VITE_BACKEND_URL=http://localhost:3001
+   VITE_CLERK_PUBLISHABLE_KEY=pk_test_prashu........................
+   CLERK_SECRET_KEY=sk_test_ZJ8.....................
+   VITE_BACKEND_URL=https://yourbackend.in
    ```
 4. Start development server:
    ```bash
@@ -190,5 +191,3 @@ The application uses a unified API context system for all backend communication:
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
-
